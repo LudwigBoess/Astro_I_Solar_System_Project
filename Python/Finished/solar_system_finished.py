@@ -47,7 +47,6 @@ class Unitsystem:
         self.t_unit = t_unit
         self.v_unit = l_unit/t_unit
         self.G      = 6.674e-8 * m_unit * t_unit * t_unit / l_unit / l_unit / l_unit    # Gravitationskonstante in Code Einheiten
-        self.c      = 2.99792458e+10 * t_unit / l_unit                                  # Lichtgeschwindigkeit in Code Einheiten
 
 
 # Einheitensystem definieren
@@ -89,6 +88,7 @@ class Particle:
         self.a  = a     # Beschleunigung
 
 
+    # gibt den absoluten Wert der Beschleunigung zurück.
     def a_abs(self):
         return np.sqrt(self.a[0]**2 + self.a[1]**2 + self.a[2]**2)
 
@@ -220,12 +220,13 @@ def init_perturber(unit_system):
     # Das muss 0 bleiben
     a = np.array( [ 0.0, 0.0, 0.0 ] )
 
-    return Particle( m, x, v, a )
+    return [Particle( m, x, v, a )]
 
 
 """
     Funktionen für die zeitliche Entwicklung.
-    Wir benutzen einen 'KDK-Leapfrog Integrator': https://de.wikipedia.org/wiki/Leapfrog-Verfahren
+    Wir benutzen einen 'KDK-Leapfrog Integrator':
+    https://de.wikipedia.org/wiki/Leapfrog-Verfahren
 """
 
 # Leapfrog kick für Geschwindigeit update
@@ -292,13 +293,15 @@ def run():
     solar_system = init_solar_system(unit_system)
     perturber    = init_perturber(unit_system)
 
-    system = solar_system + [perturber]
+    system = solar_system + perturber
 
+    # löscht die vorherige output Datei mit dem gleichen Namen
     init_output(conf.output_file)
 
     # erste Berechnung der Grav. Beschleunigung
     system = grav_acc(system, unit_system.G)
 
+    # Anfangszeit definieren
     t = 0.0
     next_output_time = 0.0
 
@@ -306,12 +309,16 @@ def run():
     while ( t < conf.t_max ):
 
         # Wir müssen nicht an jedem Zeitschritt einen Output schreiben
+        # sondern nur in den definierten Intervallen
         if ( t >= next_output_time ):
 
-            print(f"t = {t:0.3f}")
+            # gibt einen Ouput der aktuellen Zeit
+            print(f"t = {t:0.2f}")
 
+            # schreibt den aktuellen Status in das Output File
             write_output(conf.output_file, system, t)
 
+            # update für die nächste Output Zeit
             next_output_time += conf.dt_output
 
         # maximalen Wert der Grav. Beschl. finden für adaptiven Zeitschritt
