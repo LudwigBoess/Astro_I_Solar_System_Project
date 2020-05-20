@@ -95,9 +95,9 @@ class Particle:
     # gibt x und v als output array zurück
     def output(self):
 
-        out_str = []
-        out_str += [f"{self.x[i]:0.6e}\t" for i in range(0, 3)]
-        out_str += [f"{self.v[i]:0.6e}\t" for i in range(0, 3)]
+        out_str = ""
+        out_str += "".join(f"{i:0.6e}\t" for i in self.x)
+        out_str += "".join(f"{i:0.6e}\t" for i in self.v)
 
         return out_str
 
@@ -105,26 +105,20 @@ class Particle:
 def write_output(filename, system, t):
 
     # Öffnet die output Datei, oder erstellt sie, falls sie nicht existiert.
-    f = open(filename, "a+")
+    with open(filename, "a+") as f:
 
-    # Als Erstes schreiben wir die Zeit
-    out_str = [f"{t:0.6e}\t"]
+        # Als Erstes schreiben wir die Zeit
+        out_str = f"{t:0.6e}\t"
 
-    # Dann x und v für jedes Teilchen
-    for p in system:
-        out_str += p.output()
+        # Dann x und v für jedes Teilchen
+        for p in system:
+            out_str += p.output()
 
-    # neue Zeile
-    out_str += ["\n"]
+        # neue Zeile
+        out_str += "\n"
 
-    # Einen einzelnen String erstellen
-    out_str = ft.reduce(lambda a, b: a+b, out_str)
-
-    # string in die Datei schreiben
-    f.write(out_str)
-
-    # Datei schliessen
-    f.close()
+        # string in die Datei schreiben
+        f.write(out_str)
 
 
 
